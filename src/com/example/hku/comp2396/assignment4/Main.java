@@ -17,8 +17,15 @@ import javax.swing.event.MenuListener;
 
 public class Main {
 
+  /**
+   * Path to card images, edit as you need.
+   */
   static final String path = "assets/images/";
 
+
+  /**
+   * A collection of all cards.
+   */
   static final ArrayList<Card> allCards = new ArrayList<Card>(
       Arrays.asList(new Card(1, 1),
           new Card(1, 2), new Card(1, 3), new Card(1, 4), new Card(1, 5),
@@ -131,6 +138,11 @@ public class Main {
   }
 
 
+  /**
+   * Program entry point.
+   *
+   * @param args program args
+   */
   public static void main(String[] args) {
     var main = new Main();
     main.start();
@@ -143,6 +155,9 @@ public class Main {
   }
 
 
+  /**
+   * Start the game.
+   */
   public void start() {
     this.registerMenuBar();
     this.registerCards();
@@ -380,35 +395,82 @@ public class Main {
 
 class Card {
 
+  /**
+   * Color code of the card.
+   */
   final int color;
+
+  /**
+   * Number code of the card.
+   */
   final int number;
 
+
+  /**
+   * Construct a card.
+   *
+   * @param color  Color code
+   * @param number Number code
+   */
   Card(int color, int number) {
     this.color = color;
     this.number = number;
   }
 
+
+  /**
+   * Construct a card.
+   *
+   * @param code String code of the card.
+   */
   Card(String code) {
     this(Integer.parseInt(code.substring(0, 1)),
         Integer.parseInt(code.substring(1)));
   }
 
+  /**
+   * Get string code of the card.
+   *
+   * @return String code.
+   */
   String getCode() {
     return String.valueOf(color) + String.valueOf(number);
   }
 
+  /**
+   * Get path to the image.
+   *
+   * @return File path.
+   */
   String getPath() {
     return Main.path + "card_" + getCode() + ".gif";
   }
 
+  /**
+   * Get number code of card.
+   *
+   * @return Number code.
+   */
   int getNumber() {
     return number;
   }
 
+  /**
+   * Determine if card is a special.
+   *
+   * @return Whether a card is a special card.
+   */
   boolean isSpecial() {
     return this.number > 10;
   }
 
+  /**
+   * Determine who is the winner.
+   *
+   * @param playerCards Cards held by player.
+   * @param dealerCards Cards held by dealer.
+   * @return Whether player wins.
+   */
   static boolean determineWinner(ArrayList<Card> playerCards,
       ArrayList<Card> dealerCards) {
     // return true if player wins
