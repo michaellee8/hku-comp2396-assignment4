@@ -4,26 +4,43 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import javax.swing.*;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 
 
 public class Main {
 
-  static final Card[] allCards = {
-      new Card(1, 1), new Card(1, 2), new Card(1, 3), new Card(1, 4), new Card(1, 5),
-      new Card(1, 6), new Card(1, 7), new Card(1, 8), new Card(1, 9), new Card(1, 10),
-      new Card(1, 11), new Card(1, 12), new Card(1, 13), new Card(2, 1), new Card(2, 2),
-      new Card(2, 3), new Card(2, 4), new Card(2, 5), new Card(2, 6), new Card(2, 7),
-      new Card(2, 8), new Card(2, 9), new Card(2, 10), new Card(2, 11), new Card(2, 12),
-      new Card(2, 13), new Card(3, 1), new Card(3, 2), new Card(3, 3), new Card(3, 4),
-      new Card(3, 5), new Card(3, 6), new Card(3, 7), new Card(3, 8), new Card(3, 9),
-      new Card(3, 10), new Card(3, 11), new Card(3, 12), new Card(3, 13), new Card(4, 1),
-      new Card(4, 2), new Card(4, 3), new Card(4, 4), new Card(4, 5), new Card(4, 6),
-      new Card(4, 7), new Card(4, 8), new Card(4, 9), new Card(4, 10), new Card(4, 11),
-      new Card(4, 12), new Card(4, 13),
-  };
+  static final String path = "assets/images/";
+
+  static final ArrayList<Card> allCards = new ArrayList<Card>(
+      Arrays.asList(new Card(1, 1),
+          new Card(1, 2), new Card(1, 3), new Card(1, 4), new Card(1, 5),
+          new Card(1, 6), new Card(1, 7), new Card(1, 8), new Card(1, 9),
+          new Card(1, 10),
+          new Card(1, 11), new Card(1, 12), new Card(1, 13), new Card(2, 1),
+          new Card(2, 2),
+          new Card(2, 3), new Card(2, 4), new Card(2, 5), new Card(2, 6),
+          new Card(2, 7),
+          new Card(2, 8), new Card(2, 9), new Card(2, 10), new Card(2, 11),
+          new Card(2, 12),
+          new Card(2, 13), new Card(3, 1), new Card(3, 2), new Card(3, 3),
+          new Card(3, 4),
+          new Card(3, 5), new Card(3, 6), new Card(3, 7), new Card(3, 8),
+          new Card(3, 9),
+          new Card(3, 10), new Card(3, 11), new Card(3, 12), new Card(3, 13),
+          new Card(4, 1),
+          new Card(4, 2), new Card(4, 3), new Card(4, 4), new Card(4, 5),
+          new Card(4, 6),
+          new Card(4, 7), new Card(4, 8), new Card(4, 9), new Card(4, 10),
+          new Card(4, 11),
+          new Card(4, 12), new Card(4, 13)));
 
   // Main frame
   private JFrame frame = new JFrame();
@@ -40,15 +57,16 @@ public class Main {
   // Cards
   private JPanel cardPanel = new JPanel();
   private JLabel[] cardLabels = {
-      new JLabel(), new JLabel(), new JLabel(), new JLabel(), new JLabel(), new JLabel(),
+      new JLabel(), new JLabel(), new JLabel(), new JLabel(), new JLabel(),
+      new JLabel(),
   };
   private ImageIcon[] cardImageIcons = {
-      new ImageIcon("assets/images/card_back.gif"),
-      new ImageIcon("assets/images/card_back.gif"),
-      new ImageIcon("assets/images/card_back.gif"),
-      new ImageIcon("assets/images/card_back.gif"),
-      new ImageIcon("assets/images/card_back.gif"),
-      new ImageIcon("assets/images/card_back.gif"),
+      new ImageIcon(path + "card_back.gif"),
+      new ImageIcon(path + "card_back.gif"),
+      new ImageIcon(path + "card_back.gif"),
+      new ImageIcon(path + "card_back.gif"),
+      new ImageIcon(path + "card_back.gif"),
+      new ImageIcon(path + "card_back.gif"),
   };
 
   // Buttons
@@ -71,10 +89,45 @@ public class Main {
 
   // Game state
   private int balance = 100;
-  private Card[] cardDeck = {};
+  private ArrayList<Card> cardDeck;
+  private ArrayList<Card> dealerCards;
+  private ArrayList<Card> playerCards;
+  private int replaceTimes = 0;
+  private boolean showDealerCards = false;
+  private int bet = 0;
+  private boolean enableMoneyTextField = true;
+  private boolean enableStartButton = true;
+  private boolean enableResultButton = false;
+  private boolean enableReplaceButtons = false;
 
   private void applyState() {
     balanceLabel.setText(String.valueOf(balance));
+    if (cardLabels != null && dealerCards != null && playerCards != null) {
+      cardLabels[0].setIcon(new ImageIcon(dealerCards.get(0).getPath()));
+      cardLabels[1].setIcon(new ImageIcon(dealerCards.get(1).getPath()));
+      cardLabels[2].setIcon(new ImageIcon(dealerCards.get(2).getPath()));
+      cardLabels[3].setIcon(new ImageIcon(playerCards.get(0).getPath()));
+      cardLabels[4].setIcon(new ImageIcon(playerCards.get(1).getPath()));
+      cardLabels[5].setIcon(new ImageIcon(playerCards.get(2).getPath()));
+    }
+    if (cardLabels != null && !showDealerCards) {
+      cardLabels[0].setIcon(new ImageIcon(path + "card_back.gif"));
+      cardLabels[1].setIcon(new ImageIcon(path + "card_back.gif"));
+      cardLabels[2].setIcon(new ImageIcon(path + "card_back.gif"));
+    }
+    if (replaceTimes >= 2) {
+      replaceButtons[0].setEnabled(false && enableReplaceButtons);
+      replaceButtons[1].setEnabled(false && enableReplaceButtons);
+      replaceButtons[2].setEnabled(false && enableReplaceButtons);
+    }
+    if (replaceTimes < 2) {
+      replaceButtons[0].setEnabled(true && enableReplaceButtons);
+      replaceButtons[1].setEnabled(true && enableReplaceButtons);
+      replaceButtons[2].setEnabled(true && enableReplaceButtons);
+    }
+    moneyTextField.setEnabled(enableMoneyTextField);
+    startButton.setEnabled(enableStartButton);
+    resultButton.setEnabled(enableResultButton);
   }
 
 
@@ -83,13 +136,12 @@ public class Main {
     main.start();
   }
 
-  private Card[] getShuffledCardDeck() {
-    var cards = allCards.clone();
-    var list = Arrays.asList(cards);
-    Collections.shuffle(list);
-    Card[] arr = {};
-    return list.toArray(arr);
+  private ArrayList<Card> getShuffledCardDeck() {
+    var cards = (ArrayList<Card>) allCards.clone();
+    Collections.shuffle(cards);
+    return cards;
   }
+
 
   public void start() {
     this.registerMenuBar();
@@ -97,10 +149,13 @@ public class Main {
     this.registerButtons();
     this.registerGameControl();
     this.registerMsg();
+    this.registerMenu();
 
     // Always put these in the last of start
     this.applyState();
     this.configureFrame();
+
+    cardDeck = getShuffledCardDeck();
   }
 
   private void registerMenuBar() {
@@ -150,11 +205,105 @@ public class Main {
   private void registerButtons() {
     for (var i = 0; i < 3; i++) {
       replaceButtons[i].setBackground(Color.YELLOW);
+      final int n = i;
+      replaceButtons[i].addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+          playerCards.set(n, cardDeck.remove(cardDeck.size() - 1));
+          replaceTimes++;
+          applyState();
+        }
+      });
       buttonPanel.add(replaceButtons[i]);
     }
     buttonPanel.setBackground(Color.YELLOW);
     jContentPane.add(buttonPanel);
   }
+
+  private void onStart() {
+    int b;
+    try {
+      b = Integer.parseInt(moneyTextField.getText());
+    } catch (NumberFormatException e) {
+      JOptionPane.showMessageDialog(frame,
+          "WARNING: The bet you place must be a positive integer!");
+      return;
+    }
+    if (b <= 0) {
+      JOptionPane.showMessageDialog(frame,
+          "WARNING: The bet you place must be a positive integer!");
+      return;
+    }
+
+    dealerCards = new ArrayList<>();
+    dealerCards.add(cardDeck.remove(cardDeck.size() - 1));
+    dealerCards.add(cardDeck.remove(cardDeck.size() - 1));
+    dealerCards.add(cardDeck.remove(cardDeck.size() - 1));
+    playerCards = new ArrayList<>();
+    playerCards.add(cardDeck.remove(cardDeck.size() - 1));
+    playerCards.add(cardDeck.remove(cardDeck.size() - 1));
+    playerCards.add(cardDeck.remove(cardDeck.size() - 1));
+    replaceTimes = 0;
+    showDealerCards = false;
+    enableMoneyTextField = false;
+    enableReplaceButtons = true;
+    enableResultButton = true;
+    enableStartButton = false;
+    bet = b;
+    applyState();
+  }
+
+  private void onResult() {
+    showDealerCards = true;
+    applyState();
+    if (Card.determineWinner(playerCards, dealerCards)) {
+      // Player wins
+      JOptionPane
+          .showMessageDialog(frame, "Congratulations! You win this round!");
+      balance += bet;
+    } else {
+      // Dealer wins
+      JOptionPane
+          .showMessageDialog(frame, "Sorry! The Dealer wins this round!");
+      balance -= bet;
+    }
+    if (balance <= 0) {
+      JOptionPane.showMessageDialog(
+          frame,
+          new StringBuilder("Game over!\n")
+              .append("You have no more money!\n")
+              .append("Please start a new game!").toString()
+      );
+      msgPanel.removeAll();
+      msgPanel.revalidate();
+      msgPanel.repaint();
+      msgPanel
+          .add(new JLabel("You have no more money! Please start a new game!"));
+      onEnd();
+      return;
+    }
+    if (cardDeck.size() < 6) {
+      JOptionPane.showMessageDialog(frame,
+          "No more cards in card deck, the game ends now");
+    }
+
+    enableMoneyTextField = true;
+    enableStartButton = true;
+    enableResultButton = false;
+    enableReplaceButtons = false;
+    applyState();
+  }
+
+  private void onEnd() {
+
+    enableReplaceButtons = false;
+    enableStartButton = false;
+    enableResultButton = false;
+
+    applyState();
+
+  }
+
 
   private void registerGameControl() {
     moneyTextField.setColumns(10);
@@ -164,14 +313,68 @@ public class Main {
     gameControlPanel.add(startButton);
     gameControlPanel.add(resultButton);
 
+    startButton.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent actionEvent) {
+        onStart();
+      }
+    });
+
+    resultButton.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent actionEvent) {
+        onResult();
+      }
+    });
+
     jContentPane.add(gameControlPanel);
   }
 
   private void registerMsg() {
-    msgPanel.add(new JLabel("Please place your bet! Amount of money you have: $"));
+    msgPanel
+        .add(new JLabel("Please place your bet! Amount of money you have: $"));
     msgPanel.add(balanceLabel);
 
     jContentPane.add(msgPanel);
+  }
+
+  private void registerMenu() {
+    exitMenuItem.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent actionEvent) {
+        frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+      }
+    });
+    helpMenu.addMenuListener(new MenuListener() {
+      @Override
+      public void menuSelected(MenuEvent menuEvent) {
+//        System.out.println("Open help dialog");
+        JOptionPane.showMessageDialog(
+            frame,
+            new StringBuilder()
+                .append("Rules to determine who has better cards:\n")
+                .append("J, Q, K are regarded as special cards.\n")
+                .append("Rule 1: The one with more special cards wins.\n")
+                .append(
+                    "Rule 2: If both have the same number of special cards, add the face values of the other "
+                        + "card(s) and take the remainder after dividing the sum by 10. The one with a bigger "
+                        + "remainder wins. (Note: Ace = 1).\n")
+                .append(
+                    "Rule 3: The dealer wins if both rule 1 and rule 2 cannot distinguish the winner.\n")
+                .toString()
+        );
+      }
+
+      @Override
+      public void menuDeselected(MenuEvent menuEvent) {
+
+      }
+
+      @Override
+      public void menuCanceled(MenuEvent menuEvent) {
+
+      }
+    });
   }
 }
 
@@ -186,12 +389,44 @@ class Card {
   }
 
   Card(String code) {
-    this(Integer.parseInt(code.substring(0, 1)), Integer.parseInt(code.substring(1)));
+    this(Integer.parseInt(code.substring(0, 1)),
+        Integer.parseInt(code.substring(1)));
   }
 
   String getCode() {
     return String.valueOf(color) + String.valueOf(number);
   }
 
+  String getPath() {
+    return Main.path + "card_" + getCode() + ".gif";
+  }
+
+  int getNumber() {
+    return number;
+  }
+
+  boolean isSpecial() {
+    return this.number > 10;
+  }
+
+  static boolean determineWinner(ArrayList<Card> playerCards,
+      ArrayList<Card> dealerCards) {
+    // return true if player wins
+
+    var playerSpecialCardAmount = playerCards.stream().filter(Card::isSpecial)
+        .count();
+    var dealerSpecialCardAmount = dealerCards.stream().filter(Card::isSpecial)
+        .count();
+    if (playerSpecialCardAmount != dealerSpecialCardAmount) {
+      return playerSpecialCardAmount > dealerSpecialCardAmount;
+    }
+
+    var playerScore = playerCards.stream().map(Card::getNumber)
+        .reduce(0, (a, b) -> a + b) % 10;
+    var dealerScore = dealerCards.stream().map(Card::getNumber)
+        .reduce(0, (a, b) -> a + b) % 10;
+
+    return playerScore > dealerScore;
+  }
 
 }
